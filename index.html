@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Ein Geschenk zu deiner Hochzeit</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600&family=Great+Vibes&display=swap">
+<style>
+:root{--bg:#faf6f0;--card:#fffdf9;--ink:#3a3330;--mute:#80746a;--acc:#8f6d2f;--on:#fff;--line:#e3d6bf;--sel:#f6ecdc}
+@media(prefers-color-scheme:dark){:root{--bg:#1f1b18;--card:#2a2521;--ink:#f4ece1;--mute:#b9ab9b;--acc:#d4b06f;--on:#1f1b18;--line:#463c31;--sel:#3a3027;color-scheme:dark}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:19px/1.5 "Cormorant Garamond",Georgia,serif}
+main{max-width:640px;margin:0 auto;padding:24px 16px 80px}
+h1{font:400 2.8rem/1.2 "Great Vibes",cursive,Georgia,serif;color:var(--acc);margin:.2em 0}
+.hero{text-align:center}.big{font-size:2.6rem}.hero:after{content:"❦";display:block;color:var(--acc);font-size:1.4rem}
+.card{background:var(--card);border:1px solid var(--line);outline:1px solid var(--line);outline-offset:-6px;padding:22px 20px;margin:18px 0}
+h2{font-size:1.5rem;font-weight:600;margin:0}
+.note{color:var(--mute);font-size:.9rem;margin:4px 0}.c{text-align:center}.msg,.desc{color:var(--mute);white-space:pre-wrap}
+.slots{display:flex;flex-direction:column;gap:8px}
+button,input,textarea{font:inherit;color:inherit}
+.slot{text-align:left;background:var(--bg);border:1px solid var(--line);padding:10px 12px;cursor:pointer}
+.slot[aria-pressed=true]{border-color:var(--acc);box-shadow:0 0 0 1px var(--acc);background:var(--sel);font-weight:600}
+.slot:disabled{opacity:.5}
+.btn{background:var(--acc);color:var(--on);border:0;padding:10px 16px;cursor:pointer}
+.ghost{background:none;border:1px solid var(--line);padding:8px 12px;cursor:pointer}
+input,textarea{width:100%;background:var(--bg);border:1px solid var(--line);padding:8px 10px}
+.row{display:flex;gap:8px;margin:6px 0;align-items:center}.row input{flex:1}.row .emo{flex:none;width:64px;text-align:center}
+.acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}label{display:block;font-size:.85rem;color:var(--mute);margin-top:10px}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:30px;background:var(--ink);color:var(--bg);padding:8px 14px;border-radius:20px;font-size:.9rem}
+</style></head><body><main id="app">Lade …</main>
+<script>
+const U='https://inrtlawtocwocheuilag.supabase.co',K='sb_publishable_HK1-aaNcPpps6lX3NBJnNQ_TTWzLW0m';
+const $=document.getElementById('app'),q=new URLSearchParams(location.search),G=q.get('g'),ADM=q.has('admin');
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const fmt=v=>{const d=new Date(v);return isNaN(d)?'Termin offen':d.toLocaleString('de-DE',{weekday:'long',day:'numeric',month:'long',year:'numeric',hour:'2-digit',minute:'2-digit'})+' Uhr'};
+const toast=t=>{const e=document.createElement('div');e.className='toast';e.textContent=t;document.body.append(e);setTimeout(()=>e.remove(),2500)};
+async function rpc(fn,a){const h={apikey:K,'Content-Type':'application/json'};if(K.startsWith('eyJ'))h.Authorization='Bearer '+K;
+ const r=await fetch(U+'/rest/v1/rpc/'+fn,{method:'POST',headers:h,body:JSON.stringify(a||{})});
+ const j=await r.json().catch(()=>null);if(!r.ok)throw new Error(j&&j.message||'Fehler');return j}
+let D,A='';
+async function load(){try{
+ if(ADM){if(!A)return viewLogin();D=await rpc('admin_get',{p_admin:A});return viewAdmin()}
+ if(G){D=await rpc('get_for_giver',{p_secret:G});return viewGiver()}
+ D=await rpc('get_public');viewFriend()
+}catch(e){if(ADM&&A){A='';toast('Passwort falsch');return viewLogin()}$.innerHTML='<p class="note c">Das hat nicht geklappt: '+esc(e.message)+'</p>'}}
+function viewFriend(){const g=D.gift,L=g.pick_limit,acts=D.acts.filter(a=>a.slots.length),n=acts.filter(a=>a.pick).length;
+ $.innerHTML=`<div class="hero"><div class="big">💍</div><h1>${esc(g.title)}</h1>${g.from_name?`<p class="note">von ${esc(g.from_name)}</p>`:''}<p class="msg">${esc(g.message)}</p>${L?`<p class="note">Du darfst ${L} Aktivität${L>1?'en':''} auswählen (bisher ${n}).</p>`:''}</div>`
+ +(acts.length?'':'<p class="note c">Noch keine Aktivitäten eingetragen.</p>')
+ +acts.map(a=>`<div class="card"><h2>${esc((a.emoji?a.emoji+' ':'')+a.title)}</h2><p class="note">geschenkt von ${esc(a.giver)}</p><p class="desc">${esc(a.desc)}</p><div class="slots">`
+ +a.slots.map(s=>`<button class="slot" data-a="${a.id}" data-s="${s.id}" aria-pressed="${a.pick===s.id}" ${L&&n>=L&&!a.pick?'disabled':''}>${a.pick===s.id?'✓ ':''}${esc(fmt(s.v))}</button>`).join('')+'</div></div>').join('')
+ +(acts.length?'<p class="note c">Deine Auswahl wird automatisch gespeichert.</p>':'')}
+const card=a=>`<div class="card" data-a="${a.id}"><div class="row"><input class="emo" data-f="emoji" value="${esc(a.emoji)}" placeholder="🎳"><input data-f="title" placeholder="Aktivität" value="${esc(a.title)}"></div><textarea data-f="desc" placeholder="Details, Ort, Hinweise">${esc(a.desc)}</textarea><label>Terminoptionen</label>`
+ +a.slots.map(s=>`<div class="row" data-s="${s.id}"><input type="datetime-local" data-f="v" value="${esc(s.v)}">${a.pick===s.id?'<b>✓ gewählt</b>':''}<button class="ghost" data-x="delS">✕</button></div>`).join('')
+ +'<div class="acts"><button class="ghost" data-x="addS">+ Termin</button><button class="btn" data-x="save">Speichern</button><button class="ghost" data-x="del">Löschen</button></div></div>';
+function viewGiver(){$.innerHTML=`<div class="hero"><div class="big">🎁</div><h1>Hallo ${esc(D.name)}</h1><p class="note">Trage hier deine Geschenk-Aktivität und mögliche Termine ein.</p></div>`+D.acts.map(card).join('')+'<button class="ghost" data-x="add">+ Aktivität hinzufügen</button>'}
+function viewLogin(){$.innerHTML='<div class="hero"><h1>Admin</h1></div><div class="card"><label>Passwort</label><input id="pw" type="password"><div class="acts"><button class="btn" data-x="login">Anmelden</button></div></div>'}
+function viewAdmin(){const g=D.gift,base=location.origin+location.pathname;
+ $.innerHTML=`<div class="hero"><h1>Admin</h1></div><div class="card"><label>Titel</label><input data-g="title" value="${esc(g.title)}"><label>Von (Name)</label><input data-g="from_name" value="${esc(g.from_name)}"><label>Nachricht</label><textarea data-g="message">${esc(g.message)}</textarea><label>Wie viele Aktivitäten darf er wählen? (leer = beliebig)</label><input data-g="pick_limit" type="number" min="1" value="${esc(g.pick_limit)}"><div class="acts"><button class="btn" data-x="gsave">Speichern</button></div></div><div class="card"><h2>Schenkende</h2>`
+ +D.givers.map(x=>`<div class="row" data-i="${x.id}"><span style="flex:1">${esc(x.name)}</span><button class="ghost" data-x="copy" data-u="${esc(base+'?g='+x.secret)}">Link kopieren</button><button class="ghost" data-x="delg">✕</button></div>`).join('')
+ +'<div class="row"><input id="gn" placeholder="Name der Person"><button class="btn" data-x="addg">Hinzufügen</button></div></div><div class="card"><h2>Auswahl deines Freundes</h2>'
+ +(D.acts.map(a=>{const s=a.slots.find(s=>s.id===a.pick);return `<p>${esc(a.title)} (${esc(a.giver)}): <b>${s?esc(fmt(s.v)):'noch offen'}</b></p>`}).join('')||'<p class="note">Noch nichts.</p>')+'</div>'}
+$.addEventListener('input',e=>{const t=e.target,f=t.dataset.f;if(t.dataset.g){D.gift[t.dataset.g]=t.value;return}
+ const c=t.closest('[data-a]');if(!c||!f)return;const a=D.acts.find(x=>x.id===c.dataset.a);
+ if(f==='v')a.slots.find(s=>s.id===t.closest('[data-s]').dataset.s).v=t.value;else a[f]=t.value});
+$.addEventListener('click',async e=>{const b=e.target.closest('button');if(!b)return;const x=b.dataset.x,c=b.closest('[data-a]'),a=c&&D.acts&&D.acts.find(y=>y.id===c.dataset.a);
+ try{
+ if(b.dataset.s){const on=a0=>D.acts.find(y=>y.id===b.dataset.a);
+  if(on().pick===b.dataset.s)await rpc('unpick',{p_activity:b.dataset.a});else await rpc('pick_slot',{p_activity:b.dataset.a,p_slot:b.dataset.s});
+  const y=scrollY;await load();scrollTo(0,y)}
+ else if(x==='add'){D.acts.push({id:'n'+Date.now(),isNew:1,emoji:'',title:'',desc:'',slots:[{id:'t'+Date.now(),v:''}]});viewGiver()}
+ else if(x==='addS'){a.slots.push({id:'t'+Date.now(),v:''});viewGiver()}
+ else if(x==='delS'){const i=b.closest('[data-s]').dataset.s;a.slots=a.slots.filter(s=>s.id!==i);viewGiver()}
+ else if(x==='save'){if(!a.title.trim())return toast('Bitte einen Titel eintragen.');
+  await rpc('save_activity',{p_secret:G,p_act:{id:a.isNew?null:a.id,emoji:a.emoji,title:a.title,desc:a.desc,slots:a.slots.map(s=>({id:/^t/.test(s.id)?null:s.id,v:s.v}))}});await load();toast('Gespeichert')}
+ else if(x==='del'){if(!a.isNew){if(!confirm('Aktivität wirklich löschen?'))return;await rpc('delete_activity',{p_secret:G,p_id:a.id})}else D.acts=D.acts.filter(y=>y!==a);await load()}
+ else if(x==='login'){A=document.getElementById('pw').value;await load()}
+ else if(x==='gsave'){await rpc('admin_save_gift',{p_admin:A,p_data:D.gift});toast('Gespeichert')}
+ else if(x==='addg'){const n=document.getElementById('gn').value.trim();if(!n)return;await rpc('admin_add_giver',{p_admin:A,p_name:n});await load()}
+ else if(x==='delg'){if(!confirm('Person samt Aktivitäten löschen?'))return;await rpc('admin_del_giver',{p_admin:A,p_id:b.closest('[data-i]').dataset.i});await load()}
+ else if(x==='copy'){try{await navigator.clipboard.writeText(b.dataset.u);toast('Link kopiert')}catch(_){prompt('Link kopieren:',b.dataset.u)}}
+ }catch(er){toast(er.message==='limit'?'Du hast schon die erlaubte Anzahl gewählt. Tausche zuerst eine Auswahl ab.':'Fehler: '+er.message)}});
+load();
+</script></body></html>
