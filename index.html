@@ -6,7 +6,7 @@
 :root{--bg:#fff7f5;--card:#fff;--ink:#3d3436;--mute:#7d6e72;--acc:#b4536a;--on:#fff;--line:#f0d9d9;--sel:#fde8ec;color-scheme:light}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.55 Nunito,system-ui,-apple-system,"Segoe UI",Arial,sans-serif}
 main{max-width:640px;margin:0 auto;padding:24px 16px 80px}
-h1{font:700 clamp(1.4rem,6.5vw,2.2rem)/1.2 Nunito,system-ui,sans-serif;color:var(--acc);margin:.3em 0;hyphens:auto;overflow-wrap:anywhere}
+h1{font:700 clamp(1.4rem,6.5vw,2.2rem)/1.2 Nunito,system-ui,sans-serif;color:var(--acc);margin:.3em 0;hyphens:auto;overflow-wrap:anywhere;white-space:pre-line}
 .hero{text-align:center}.big{font-size:2.6rem}.hero:after{content:"♥";display:block;color:var(--acc);font-size:1.4rem}
 .card{background:var(--card);border:1px solid var(--line);outline:1px solid var(--line);outline-offset:-6px;padding:22px 20px;margin:18px 0}
 h2{font-size:1.5rem;font-weight:600;margin:0}
@@ -54,7 +54,7 @@ const card=a=>`<div class="card" data-a="${a.id}"><div class="row"><input class=
 function viewGiver(){$.innerHTML=`<div class="hero"><div class="big">🎁</div><h1>Hallo ${esc(D.name)}</h1><p class="note">Trage hier deine Geschenk-Aktivität und mögliche Termine ein.</p></div>`+D.acts.map(card).join('')+'<button class="ghost" data-x="add">+ Aktivität hinzufügen</button>'}
 function viewLogin(){$.innerHTML='<div class="hero"><h1>Admin</h1></div><div class="card"><label>Passwort</label><input id="pw" type="password"><div class="acts"><button class="btn" data-x="login">Anmelden</button></div></div>'}
 function viewAdmin(){const g=D.gift,base=location.origin+location.pathname;
- $.innerHTML=`<div class="hero"><h1>Admin</h1></div><div class="card"><label>Titel</label><input data-g="title" value="${esc(g.title)}"><label>Von (Name)</label><input data-g="from_name" value="${esc(g.from_name)}"><label>Nachricht</label><textarea data-g="message">${esc(g.message)}</textarea><label>Wie viele Aktivitäten darf er wählen? (leer = beliebig)</label><input data-g="pick_limit" type="number" min="1" value="${esc(g.pick_limit)}"><div class="acts"><button class="btn" data-x="gsave">Speichern</button></div></div><div class="card"><h2>Schenkende</h2>`
+ $.innerHTML=`<div class="hero"><h1>Admin</h1></div><div class="card"><label>Titel (Enter = Zeilenumbruch)</label><textarea data-g="title" rows="2">${esc(g.title)}</textarea><label>Von (Name)</label><input data-g="from_name" value="${esc(g.from_name)}"><label>Nachricht</label><textarea data-g="message">${esc(g.message)}</textarea><label>Wie viele Aktivitäten darf er wählen? (leer = beliebig)</label><input data-g="pick_limit" type="number" min="1" value="${esc(g.pick_limit)}"><div class="acts"><button class="btn" data-x="gsave">Speichern</button></div></div><div class="card"><h2>Schenkende</h2>`
  +D.givers.map(x=>`<div class="row" data-i="${x.id}"><span style="flex:1">${esc(x.name)}</span><button class="ghost" data-x="copy" data-u="${esc(base+'?g='+x.secret)}">Link kopieren</button><button class="ghost" data-x="delg">✕</button></div>`).join('')
  +'<div class="row"><input id="gn" placeholder="Name der Person"><button class="btn" data-x="addg">Hinzufügen</button></div></div><div class="card"><h2>Auswahl deines Freundes</h2>'
  +(D.acts.map(a=>{const s=a.slots.find(s=>s.id===a.pick);return `<p>${esc(a.title)} (${esc(a.giver)}): <b>${s?esc(fmt(s.v)):'noch offen'}</b></p>`}).join('')||'<p class="note">Noch nichts.</p>')+'</div>'}
